@@ -73,6 +73,51 @@ def create_customer():
      except Exception as e:
           print(e)
           return showMessage('name, phone_number, address are required')
+     
+
+@app.route('/customer/update', methods=['PUT'])
+def update_customer():
+     try:
+          id = request.form['id']
+     except:
+          respone = jsonify({"message":"id is missing!"})
+          respone.status_code = 400
+          return respone
+     try:
+          name = request.form['name']
+     except:
+          respone = jsonify({"message":"name is missing!"})
+          respone.status_code = 400
+          return respone
+     try:
+          phone_number = request.form['phone_number']
+     except:
+          respone = jsonify({"message":"phone_number is missing!"})
+          respone.status_code = 400
+          return respone
+     try:
+          address = request.form['address']
+     except:
+          respone = jsonify({"message":"address is missing!"})
+          respone.status_code = 400
+          return respone
+     try:        
+          conn = mysql.connect()
+          cursor = conn.cursor(pymysql.cursors.DictCursor)		
+          sqlQuery = "UPDATE Customer SET name=%s, phone_number=%s, address=%s WHERE id=%s"
+          bindData = (name,  phone_number, address, id,)            
+          cursor.execute(sqlQuery, bindData)
+          conn.commit()
+          respone = jsonify('Customer updated successfully!')
+          respone.status_code = 200
+          cursor.close() 
+          conn.close()  
+          return respone
+     except Exception as e:
+          print(e)
+          return showMessage('name, phone_number, address are required')
+                
+
 
 @app.errorhandler(404)
 def showMessage(error=None):
