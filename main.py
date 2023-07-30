@@ -2,7 +2,7 @@ import pymysql
 from app import app
 from config import mysql
 from flask import jsonify
-
+from flask import request
 
 @app.route('/customer', methods=['GET'])
 def list_customers():
@@ -37,3 +37,52 @@ def get_customer(customer_id):
           return respone
      except Exception as e:
           print(e)
+
+@app.route('/customer/create', methods=['POST'])
+def create_customer():
+     try:
+          name = request.form['name']
+     except:
+          respone = jsonify({"message":"name is missing!"})
+          respone.status_code = 400
+          return respone
+     try:
+          phone_number = request.form['phone_number']
+     except:
+          respone = jsonify({"message":"phone_number is missing!"})
+          respone.status_code = 400
+          return respone
+     try:
+          address = request.form['address']
+     except:
+          respone = jsonify({"message":"address is missing!"})
+          respone.status_code = 400
+          return respone
+     try:        
+          conn = mysql.connect()
+          cursor = conn.cursor(pymysql.cursors.DictCursor)		
+          sqlQuery = "INSERT INTO Customer(name, phone_number, address) VALUES(%s, %s, %s)"
+          bindData = (name, phone_number, address)            
+          cursor.execute(sqlQuery, bindData)
+          conn.commit()
+          respone = jsonify('Customer added successfully!')
+          respone.status_code = 200
+          cursor.close() 
+          conn.close()  
+          return respone
+     except Exception as e:
+          print(e)
+          return showMessage('name, phone_number, address are required')
+
+@app.errorhandler(404)
+def showMessage(error=None):
+    message = {
+        'status': 400,
+        'message': error,
+    }
+    respone = jsonify(message)
+    respone.status_code = 400
+    return respone
+
+if __name__ == "__main__":
+    app.run()
